@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAFI ROBOTIQUE | Solar IoT Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --solar-yellow: #F9D71C;
+      --solar-orange: #FFA630;
+      --eco-green: #4CAF50;
+      --sky-blue: #87CEEB;
+      --earth-brown: #8B4513;
+      --text-dark: #2C3E50;
+      --text-light: #F8F9FA;
+      --card-bg: rgba(255, 255, 255, 0.9);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', 'Open Sans', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--sky-blue), #E0F7FA);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Solar panel background effect */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        linear-gradient(45deg, 
+          transparent 48%, 
+          var(--solar-yellow) 48%, 
+          var(--solar-yellow) 52%, 
+          transparent 52%),
+        linear-gradient(-45deg, 
+          transparent 48%, 
+          var(--solar-yellow) 48%, 
+          var(--solar-yellow) 52%, 
+          transparent 52%);
+      background-size: 30px 30px;
+      opacity: 0.1;
+      z-index: -1;
+    }
+
+    .login-container {
+      background: var(--card-bg);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 40px;
+      width: 100%;
+      max-width: 450px;
+      text-align: center;
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .login-container:hover {
+      transform: translateY(-5px);
+    }
+
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .logo-icon {
+      font-size: 3.5rem;
+      color: var(--solar-orange);
+      background: radial-gradient(circle, var(--solar-yellow) 30%, transparent 70%);
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      box-shadow: 0 0 20px rgba(249, 215, 28, 0.3);
+    }
+
+    h1 {
+      color: var(--text-dark);
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .tagline {
+      color: var(--eco-green);
+      margin-bottom: 30px;
+      font-weight: 500;
+      font-size: 1.1rem;
+    }
+
+    .input-group {
+      margin-bottom: 25px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-dark);
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s;
+      background-color: rgba(255, 255, 255, 0.8);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--eco-green);
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(to right, var(--eco-green), #66BB6A);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-login:hover {
+      background: linear-gradient(to right, #43A047, var(--eco-green));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .note {
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      margin-top: 25px;
+      line-height: 1.6;
+    }
+
+    .access-code {
+      display: inline-block;
+      background-color: var(--solar-yellow);
+      color: var(--text-dark);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-weight: bold;
+      margin: 0 2px;
+    }
+
+    .error-message {
+      color: #e74c3c;
+      font-size: 0.85rem;
+      margin-top: 5px;
+      display: none;
+    }
+
+    /* Solar panel animation */
+    .solar-panel {
+      position: absolute;
+      bottom: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      background: 
+        linear-gradient(45deg, 
+          transparent 48%, 
+          var(--solar-yellow) 48%, 
+          var(--solar-yellow) 52%, 
+          transparent 52%),
+        linear-gradient(-45deg, 
+          transparent 48%, 
+          var(--solar-yellow) 48%, 
+          var(--solar-yellow) 52%, 
+          transparent 52%);
+      background-size: 30px 30px;
+      opacity: 0.2;
+      transform: rotate(15deg);
+      z-index: -1;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .login-container {
+        padding: 30px;
+      }
+      
+      .logo-icon {
+        font-size: 2.5rem;
+        width: 60px;
+        height: 60px;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      .solar-panel {
+        display: none;
+      }
+    }
+
+    /* Loading animation */
+    .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="solar-panel"></div>
+  
+  <div class="login-container">
+    <div class="logo">
+      <div class="logo-icon">
+        <i class="fas fa-solar-panel"></i>
+      </div>
+    </div>
+    
+    <h1>SOLAR IOT CONTROL PANEL</h1>
+    <p class="tagline">Renewable Energy Management System</p>
+    
+    <div class="input-group">
+      <label for="username"><i class="fas fa-user"></i> MQTT Username</label>
+      <input type="text" id="username" placeholder="admin1 or ESP32-001" autocomplete="username" />
+      <div id="username-error" class="error-message">Username is required</div>
+    </div>
+    
+    <div class="input-group">
+      <label for="password"><i class="fas fa-lock"></i> MQTT Password</label>
+      <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" />
+      <div id="password-error" class="error-message">Password is required</div>
+    </div>
+    
+    <button class="btn-login" onclick="handleLogin()" id="login-btn">
+      <span id="btn-text">Connect to Solar Network</span>
+      <span id="btn-spinner" class="spinner"></span>
+    </button>
+    
+    <p class="note">
+      Use prefix <span class="access-code">admin</span> for control panel access<br>
+      Use prefix <span class="access-code">ESP32</span> for solar device access
+    </p>
+  </div>
+
+  <script>
+    function showError(elementId, message) {
+      const element = document.getElementById(elementId);
+      element.textContent = message;
+      element.style.display = 'block';
+    }
+
+    function hideError(elementId) {
+      document.getElementById(elementId).style.display = 'none';
+    }
+
+    function showLoading() {
+      document.getElementById('btn-text').style.display = 'none';
+      document.getElementById('btn-spinner').style.display = 'block';
+      document.getElementById('login-btn').disabled = true;
+    }
+
+    function hideLoading() {
+      document.getElementById('btn-text').style.display = 'block';
+      document.getElementById('btn-spinner').style.display = 'none';
+      document.getElementById('login-btn').disabled = false;
+    }
+
+    function handleLogin() {
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+      let isValid = true;
+
+      // Validate inputs
+      if (!username) {
+        showError('username-error', 'Username is required');
+        isValid = false;
+      } else {
+        hideError('username-error');
+      }
+
+      if (!password) {
+        showError('password-error', 'Password is required');
+        isValid = false;
+      } else {
+        hideError('password-error');
+      }
+
+      if (!isValid) return;
+
+      showLoading();
+
+      // Simulate network delay (remove in production)
+      setTimeout(() => {
+        sessionStorage.setItem("mqttUsername", username);
+        sessionStorage.setItem("mqttPassword", password);
+
+        const lowerUser = username.toLowerCase();
+
+        if (lowerUser.startsWith("admin")) {
+          window.location.href = "client.html";
+        } else if (lowerUser.startsWith("esp32")) {
+          window.location.href = "device.html";
+        } else {
+          hideLoading();
+          showError('username-error', 'Username must start with "admin" or "ESP32"');
+        }
+      }, 800);
+    }
+
+    // Enable Enter key to trigger login
+    document.addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        handleLogin();
+      }
+    });
+
+    // Focus username field on page load
+    window.onload = function() {
+      document.getElementById("username").focus();
+    };
+  </script>
+</body>
+</html>
