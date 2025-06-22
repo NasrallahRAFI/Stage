@@ -337,13 +337,13 @@
 
         const lowerUser = username.toLowerCase();
 
-        if (lowerUser.startsWith("admin")) {
+        if (lowerUser.startsWith("Client")) {
           window.location.href = "client.html";
         } else if (lowerUser.startsWith("esp32")) {
           window.location.href = "device.html";
         } else {
           hideLoading();
-          showError('username-error', 'Username must start with "admin" or "ESP32"');
+          showError('username-error', 'Username must start with "ClientXXXX"');
         }
       }, 800);
     }
