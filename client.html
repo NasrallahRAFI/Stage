@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contrôle IoT Pompe Solaire - RAFI ROBOTIQUE</title>
+  <title>Heliodrive IOT</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://unpkg.com/paho-mqtt@1.1.0/paho-mqtt-min.js"></script>
   <style>
@@ -547,7 +547,7 @@
     <header>
       <div class="logo">
         <i class="fas fa-water"></i>
-        <h1>POMPE SOLAIRE <span>CONTROLE</span></h1>
+        <h1>POMPE SOLAIRE <span>CONTROLE/GESTION</span></h1>
       </div>
       <div class="status-indicators">
         <div class="indicator active">
@@ -555,10 +555,6 @@
           <span>Online</span>
         </div>
         <div class="indicator active">
-          <div class="led"></div>
-          <span>Solar: 85%</span>
-        </div>
-        <div class="indicator">
           <div class="led"></div>
           <span>Battery: 92%</span>
         </div>
@@ -880,7 +876,7 @@
   <script>
     // Configuration MQTT
     const mqttConfig = {
-      broker: "wss://1b56fa9f5384446881ab36a7be8959fb.s1.eu.hivemq.cloud:8884/mqtt",
+      broker: "wss://508205b2e19c4a7fad9828d3961d6424.s1.eu.hivemq.cloud:8884/mqtt",
       topics: {
         temperature: "vfd/temperature",
         speed: "vfd/speed",
