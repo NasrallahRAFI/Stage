@@ -554,11 +554,7 @@
           <div class="led"></div>
           <span>Online</span>
         </div>
-        <div class="indicator active">
-          <div class="led"></div>
-          <span>Battery: 92%</span>
-        </div>
-      </div>
+        
     </header>
     
     <div class="dashboard">
@@ -582,9 +578,6 @@
               <i class="fas fa-stop"></i> Arrêter
             </button>
           </div>
-          <button class="btn btn-danger" onclick="emergencyStop()">
-            <i class="fas fa-exclamation-triangle"></i> Arrêt d'urgence
-          </button>
         </div>
       </div>
       
@@ -602,9 +595,6 @@
           <div class="control-row">
             <button class="btn btn-primary" onclick="setMaxPower()">
               <i class="fas fa-bolt"></i> Puissance Max
-            </button>
-            <button class="btn" onclick="setAutoMode()">
-              <i class="fas fa-cog"></i> Auto
             </button>
           </div>
         </div>
@@ -664,29 +654,29 @@
         <div class="status-card">
           <div class="status-icon">🔌</div>
           <div class="status-info">
-            <div class="status-label">Tension</div>
-            <div class="status-value" id="tension">--</div>
+            <div class="status-label">Tension entré </div>
+            <div class="status-value" id="tensionIN">--</div>
           </div>
         </div>
         <div class="status-card">
           <div class="status-icon">☀️</div>
           <div class="status-info">
-            <div class="status-label">Puissance</div>
-            <div class="status-value" id="puissance">--</div>
+            <div class="status-label">Tension Sortie</div>
+            <div class="status-value" id="tensionOUT">--</div>
           </div>
         </div>
         <div class="status-card">
           <div class="status-icon">🔋</div>
           <div class="status-info">
-            <div class="status-label">Batterie</div>
-            <div class="status-value" id="batterie">--</div>
+            <div class="status-label">Courant entré</div>
+            <div class="status-value" id="courantIN">--</div>
           </div>
         </div>
         <div class="status-card">
           <div class="status-icon">💡</div>
           <div class="status-info">
-            <div class="status-label">Consommation</div>
-            <div class="status-value" id="consommation">--</div>
+            <div class="status-label">Courant Sortie</div>
+            <div class="status-value" id="courantOUT">--</div>
           </div>
         </div>
       </div>
@@ -707,55 +697,17 @@
           </div>
         </div>
         <div class="status-card">
-          <div class="status-icon">📏</div>
-          <div class="status-info">
-            <div class="status-label">Pression</div>
-            <div class="status-value" id="pression">--</div>
-          </div>
-        </div>
-        <div class="status-card">
           <div class="status-icon">🌡️</div>
           <div class="status-info">
-            <div class="status-label">Temp. moteur</div>
-            <div class="status-value" id="temp-moteur">--</div>
+            <div class="status-label">Température</div>
+            <div class="status-value" id="temperature">--</div>
           </div>
         </div>
         <div class="status-card">
           <div class="status-icon">🔄</div>
           <div class="status-info">
             <div class="status-label">État Pompe</div>
-            <div class="status-value" id="etat-pompe">--</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Solar Data Panel -->
-    <div class="panel-header" onclick="togglePanel('DonnéesSolaires')">
-      <div class="panel-icon">☀️</div>
-      <div>Données Solaires</div>
-    </div>
-    <div id="DonnéesSolaires" class="panel-content">
-      <div class="grid-container">
-        <div class="status-card">
-          <div class="status-icon">🌞</div>
-          <div class="status-info">
-            <div class="status-label">Ensoleillement</div>
-            <div class="status-value" id="ensoleillement">--</div>
-          </div>
-        </div>
-        <div class="status-card">
-          <div class="status-icon">🌡️</div>
-          <div class="status-info">
-            <div class="status-label">Temp. ambiante</div>
-            <div class="status-value" id="temp-ambiante">--</div>
-          </div>
-        </div>
-        <div class="status-card">
-          <div class="status-icon">🛠️</div>
-          <div class="status-info">
-            <div class="status-label">État panneaux</div>
-            <div class="status-value" id="etat-panneaux">--</div>
+            <div class="status-value" id="statuts">--</div>
           </div>
         </div>
       </div>
@@ -782,13 +734,6 @@
     </div>
     <div id="DonnéesMaintenance" class="panel-content">
       <div class="grid-container">
-        <div class="status-card">
-          <div class="status-icon">⏱️</div>
-          <div class="status-info">
-            <div class="status-label">Heures fonctionnement</div>
-            <div class="status-value" id="heures-fonctionnement">--</div>
-          </div>
-        </div>
         <div class="status-card">
           <div class="status-icon">⚠️</div>
           <div class="status-info">
@@ -820,20 +765,7 @@
             <div class="status-value" id="etat-reseau">--</div>
           </div>
         </div>
-        <div class="status-card">
-          <div class="status-icon">⏳</div>
-          <div class="status-info">
-            <div class="status-label">Latence</div>
-            <div class="status-value" id="latence">--</div>
-          </div>
-        </div>
-        <div class="status-card">
-          <div class="status-icon">🔄</div>
-          <div class="status-info">
-            <div class="status-label">Mises à jour</div>
-            <div class="status-value" id="mises-a-jour">À jour</div>
-          </div>
-        </div>
+  
       </div>
       <div id="log">📡 En attente de données MQTT...</div>
     </div>
@@ -881,23 +813,13 @@
         temperature: "vfd/temperature",
         speed: "vfd/speed",
         status: "vfd/status",
-        tension: "vfd/tension",
-        puissance: "vfd/puissance",
-        batterie: "vfd/batterie",
-        consommation: "vfd/consommation",
-        debit: "vfd/debit",
-        pression: "vfd/pression",
-        tempMoteur: "vfd/temp_moteur",
-        etatPompe: "vfd/etat_pompe",
-        ensoleillement: "vfd/ensoleillement",
-        tempAmbiante: "vfd/temp_ambiante",
-        etatPanneaux: "vfd/etat_panneaux",
+        tensionIN: "vfd/tensionIN",
+        tensionIN: "vfd/tensionIN",
+        courantIN: "vfd/courantIN",
+        courantOUT: "vfd/courantOUT",
         niveauEau: "vfd/niveau_eau",
-        heuresFonctionnement: "vfd/heures_fonctionnement",
         alertes: "vfd/alertes",
-        etatConnexions: "vfd/etat_connexions",
         etatReseau: "vfd/etat_reseau",
-        latence: "vfd/latence",
         misesAJour: "vfd/mises_a_jour",
         schedule: "vfd/schedule",
         Speedinput: "vfd/Speedinput",
