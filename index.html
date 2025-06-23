@@ -339,8 +339,6 @@
 
         if (lowerUser.startsWith("client")) {
           window.location.href = "client.html";
-        } else if (lowerUser.startsWith("esp32")) {
-          window.location.href = "device.html";
         } else {
           hideLoading();
           showError('username-error', 'Username must start with "ClientXXXX"');
