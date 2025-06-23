@@ -1,17 +1,36 @@
 #include <WiFi.h>
-#include <PubSubClient.h>
 #include <WiFiClientSecure.h>
+#include <PubSubClient.h>
 
 // WiFi credentials
 const char *WIFI_SSID = "Wokwi-GUEST";
-const char *WIFI_PWD = "";
+const char *WIFI_PWD  = "";
 
 // MQTT Broker settings
-const char *MQTT_BROKER = "1b56fa9f5384446881ab36a7be8959fb.s1.eu.hivemq.cloud";
-const int MQTT_PORT = 8883;
-const char *MQTT_USERNAME = "ESP32";
-const char *MQTT_PASSWORD = "Houbachi1970@";
-const char *MQTT_TOPIC = "vfd/conection";
+const char *MQTT_BROKER   = "508205b2e19c4a7fad9828d3961d6424.s1.eu.hivemq.cloud";
+const int   MQTT_PORT     = 8883;
+const char *MQTT_USERNAME = "Device0001";
+const char *MQTT_PASSWORD = "Aa12345678";
+
+// Status LED
+#define STATUS_LED 2
+
+// MQTT Topics
+struct {
+  const char* connection    = "vfd/conection";
+  const char* temperature   = "vfd/temperature";
+  const char* speed         = "vfd/speed";
+  const char* tensionIN     = "vfd/tensionIN";
+  const char* courantIN     = "vfd/courantIN";
+  const char* courantOUT    = "vfd/courantOUT";
+  const char* niveauEau     = "vfd/niveau_eau";
+  const char* alertes       = "vfd/alertes";
+  const char* etatReseau    = "vfd/etat_reseau";
+  const char* misesAJour    = "vfd/mises_a_jour";
+  const char* speedInput    = "vfd/Speedinput";
+  const char* status        = "vfd/status";
+  const char* schedule      = "vfd/schedule";
+} topics;
 
 // Root CA certificate for HiveMQ Cloud
 const char* root_ca = \
@@ -49,76 +68,145 @@ const char* root_ca = \
 
 WiFiClientSecure espClient;
 PubSubClient client(espClient);
-unsigned long lastReconnectAttempt = 0;
+
+// VFD state
+int currentSpeed = 0;
+String vfdStatus = "OFF";
+unsigned long lastSensorUpdate = 0;
+const long sensorInterval = 5000;
 
 void setup_wifi() {
-  delay(10);
-  Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(WIFI_SSID);
+  Serial.begin(115200);
+  pinMode(STATUS_LED, OUTPUT);
+  digitalWrite(STATUS_LED, LOW);
 
+  Serial.print("Connecting to WiFi: ");
+  Serial.println(WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PWD);
 
-  while (WiFi.status() != WL_CONNECTED) {
+  int attempt = 0;
+  while (WiFi.status() != WL_CONNECTED && attempt++ < 30) {
     delay(500);
     Serial.print(".");
+    digitalWrite(STATUS_LED, !digitalRead(STATUS_LED));
   }
 
-  Serial.println("\nWiFi connected");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("\nWiFi connected");
+    Serial.print("IP: ");
+    Serial.println(WiFi.localIP());
+    digitalWrite(STATUS_LED, HIGH);
+  } else {
+    Serial.println("\nWiFi failed, restarting...");
+    ESP.restart();
+  }
 }
 
-boolean reconnect() {
-  if (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    
-    // Set root CA certificate
-    espClient.setCACert(root_ca);
-    
-    // Create a random client ID
+void publishSensorData() {
+  char payload[16];
+
+  dtostrf(random(200, 350) / 10.0, 4, 1, payload); // temperature
+  client.publish(topics.temperature, payload);
+
+  dtostrf(random(210, 250), 3, 0, payload); // tension IN
+  client.publish(topics.tensionIN, payload);
+
+  dtostrf(random(5, 20) / 10.0, 3, 1, payload); // courant IN
+  client.publish(topics.courantIN, payload);
+
+  dtostrf(random(10, 30) / 10.0, 3, 1, payload); // courant OUT
+  client.publish(topics.courantOUT, payload);
+
+  itoa(random(0, 100), payload, 10); // niveau eau
+  client.publish(topics.niveauEau, payload);
+
+  const char* networkStates[] = {"STABLE", "UNSTABLE", "LOW_VOLTAGE"};
+  client.publish(topics.etatReseau, networkStates[random(0, 3)]);
+
+  if (random(0, 10) > 7) {
+    const char* alerts[] = {"OVERTEMP", "LOW_WATER", "VOLTAGE_FLUCTUATION"};
+    client.publish(topics.alertes, alerts[random(0, 3)]);
+  }
+
+  Serial.println("Sensor data published");
+}
+
+void handleSpeedInput(String value) {
+  int speed = value.toInt();
+  if (speed >= 0 && speed <= 100) {
+    currentSpeed = speed;
+    char msg[8];
+    sprintf(msg, "%d", speed);
+    client.publish(topics.speed, msg);
+    Serial.printf("Speed set: %d%%\n", speed);
+  } else {
+    Serial.println("Invalid speed input");
+  }
+}
+
+void handleStatusCommand(String value) {
+  value.toUpperCase();
+  if (value == "ON" || value == "OFF" || value == "AUTO") {
+    vfdStatus = value;
+    client.publish(topics.status, vfdStatus.c_str());
+    Serial.printf("Status updated: %s\n", vfdStatus.c_str());
+  } else {
+    Serial.println("Invalid status command");
+  }
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+  payload[length] = '\0';
+  String msg = String((char*)payload);
+
+  Serial.printf("MQTT Message [%s]: %s\n", topic, msg.c_str());
+
+  if (strcmp(topic, topics.speedInput) == 0)
+    handleSpeedInput(msg);
+  else if (strcmp(topic, topics.status) == 0)
+    handleStatusCommand(msg);
+  else if (strcmp(topic, topics.schedule) == 0)
+    Serial.printf("Schedule command: %s\n", msg.c_str());
+}
+
+void reconnect() {
+  while (!client.connected()) {
+    Serial.print("Connecting to MQTT...");
     String clientId = "ESP32Client-" + String(random(0xffff), HEX);
-    
-    // Attempt to connect
     if (client.connect(clientId.c_str(), MQTT_USERNAME, MQTT_PASSWORD)) {
       Serial.println("connected");
-      
-      // Publish connection message
-      if (client.publish(MQTT_TOPIC, "ESP32 CONNECTED SUCCESSFULLY")) {
-        Serial.println("Message published successfully");
-      } else {
-        Serial.println("Message failed to publish");
-      }
-      return true;
+      digitalWrite(STATUS_LED, HIGH);
+
+      client.subscribe(topics.speedInput);
+      client.subscribe(topics.status);
+      client.subscribe(topics.schedule);
+
+      client.publish(topics.connection, "ESP32 CONNECTED");
+      client.publish(topics.status, vfdStatus.c_str());
+      client.publish(topics.speed, "0");
     } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      return false;
+      Serial.printf("Failed, rc=%d. Retrying...\n", client.state());
+      delay(5000);
     }
   }
-  return true;
 }
 
 void setup() {
-  Serial.begin(115200);
-  randomSeed(micros());
   setup_wifi();
+  espClient.setCACert(root_ca);
   client.setServer(MQTT_BROKER, MQTT_PORT);
-  client.setKeepAlive(60);
-  lastReconnectAttempt = millis();
+  client.setCallback(callback);
+  randomSeed(analogRead(0));
 }
 
 void loop() {
-  if (!client.connected()) {
-    unsigned long now = millis();
-    if (now - lastReconnectAttempt > 5000) {
-      lastReconnectAttempt = now;
-      if (reconnect()) {
-        lastReconnectAttempt = 0;
-      }
-    }
-  } else {
-    client.loop();
+  if (!client.connected())
+    reconnect();
+    
+  client.loop();
+
+  if (millis() - lastSensorUpdate > sensorInterval) {
+    publishSensorData();
+    lastSensorUpdate = millis();
   }
 }
